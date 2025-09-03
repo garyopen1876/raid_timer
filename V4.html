@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <title>12 襲擊倒數</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 50px;
+      background-color: #fef6f9;
+    }
+
+    #timer {
+      font-size: 48px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .button {
+      font-size: 20px;
+      padding: 12px 24px;
+      margin: 8px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: white;
+    }
+
+    .button.timer1 {
+      background-color: #ff6b81;
+    }
+
+    .button.timer1:hover {
+      background-color: #ff4e67;
+    }
+
+    .button.timer2 {
+      background-color: #4dabf7;
+    }
+
+    .button.timer2:hover {
+      background-color: #339af0;
+    }
+
+    .button.reset {
+      background-color: #868e96;
+    }
+
+    .button.reset:hover {
+      background-color: #495057;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="timer">00:00</div>
+  <button class="button timer2" onclick="startCountdown(30)">倒數 0:30</button>
+  <button class="button timer1" onclick="startCountdown(150)">倒數 2:30</button>
+  <button class="button reset" onclick="resetCountdown()">重置</button>
+
+  <script>
+    let timerId = null;
+    let remainingSeconds = 0;
+    let speakTimeouts = [];
+    let hasSpoken5s = false;
+
+    function updateDisplay() {
+      const mins = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+      const secs = String(remainingSeconds % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = `${mins}:${secs}`;
+    }
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      speechSynthesis.speak(utterance);
+    }
+
+    function cancelSpeaking() {
+      speakTimeouts.forEach(id => clearTimeout(id));
+      speakTimeouts = [];
+      speechSynthesis.cancel();
+    }
+
+    function startCountdown(seconds) {
+      clearInterval(timerId);
+      cancelSpeaking();
+      hasSpoken5s = false;
+      remainingSeconds = seconds;
+      updateDisplay();
+
+      timerId = setInterval(() => {
+        remainingSeconds--;
+        updateDisplay();
+
+        if (remainingSeconds === 10 && !hasSpoken5s) {
+          speak("還剩 10 秒喔 注意尖刺");
+          hasSpoken5s = true;
+        }
+
+        if (remainingSeconds <= 0) {
+          clearInterval(timerId);
+          timerId = null;
+          speak("時間到 記得重新計算");
+        }
+      }, 1000);
+    }
+
+    function resetCountdown() {
+      clearInterval(timerId);
+      timerId = null;
+      remainingSeconds = 0;
+      updateDisplay();
+      cancelSpeaking();
+    }
+  </script>
+</body>
+
+</html>
